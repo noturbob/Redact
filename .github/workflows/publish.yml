@@ -7,6 +7,12 @@ on:
   push:
     branches:
       - main
+    # --- FIX: Don't run this workflow if ONLY docs/config are changed ---
+    paths-ignore:
+      - '**.md'      # Ignores README.md, CONTRIBUTING.md, etc.
+      - 'LICENSE'
+      - '.gitignore'
+    # --------------------------------------------------------------------
 
 jobs:
   publish:
@@ -35,8 +41,8 @@ jobs:
       - name: Publish to npm
         run: npm publish --access=public
         env:
-          # Use the secret token we created
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # QUOTES ADDED HERE TO FIX EDITOR WARNING
+          NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}"
 
       # 5. Set up Node.js for publishing to GitHub Packages
       - name: Setup Node.js for GitHub Packages
@@ -51,5 +57,5 @@ jobs:
       - name: Publish to GitHub Packages
         run: npm publish
         env:
-          # GitHub provides this token automatically for its own registry
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # QUOTES ADDED HERE TO FIX EDITOR WARNING
+          NODE_AUTH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
