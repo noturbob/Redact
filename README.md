@@ -1,150 +1,108 @@
-````markdown
-# 🚀 Redact.js
+🚀 Redact.js
 
-[![npm version](https://img.shields.io/npm/v/@noturbob/redact.svg)](https://www.npmjs.com/package/@noturbob/redact)
-[![NPM Downloads](https://img.shields.io/npm/dm/@noturbob/redact.svg)](https://www.npmjs.com/package/@noturbob/redact)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/noturbob/Redact)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A minimal, user-friendly web API framework for Node.js. Redact v2.1 introduces a powerful "Just Return" syntax, eliminating boilerplate code like res.json() or next().
 
-A minimal, user-friendly web API framework for Node.js. Redact is built from the ground up to provide the essential tools for creating fast and scalable web applications, without the bloat.
+📋 Table of Contents
 
-It's a perfect project for learning the fundamentals of how Node.js frameworks like Express work under the hood.
+Features
 
----
+Installation
 
-## 📋 Table of Contents
+Quick Start
 
-- [Features](#-features)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [API Guide](#-api-guide)
-  - [Routing](#routing)
-  - [Middleware](#middleware)
-  - [Error Handling](#error-handling)
-- [Contributing](#-contributing)
-- [License](#-license)
+API Guide
 
----
+Routing
 
-## ✨ Features
+Dynamic Routes
 
--   **⚡️ Clean Routing:** Expressive and simple router for `GET`, `POST`, `PUT`, and `DELETE` requests.
--   **📦 Middleware Support:** Use `app.use()` to add chainable middleware for logging, authentication, and more.
--   **✨ Automatic JSON Parsing:** Incoming JSON request bodies are automatically parsed and made available on `req.body`.
--   **📝 Response Helpers:** Simple helpers like `res.json()` and `res.status()` to make sending responses a breeze.
--   **🛡️ Centralized Error Handling:** A robust system to catch errors and prevent server crashes, sending clean responses to the client.
+Middleware
 
----
+Contributing
 
-## 💾 Installation
+License
 
-To install Redact from the npm registry, run the following command in your project directory:
+✨ Features
 
-```bash
+⚡️ Declarative Routing: Define your API structure in clean, readable object blocks.
+
+🪄 "Just Return" Logic: Return an object, array, or string, and Redact sends the response automatically.
+
+🔀 Dynamic Routing: Support for parameters like /users/:id.
+
+🛡️ Built-in Security: Automatic 1MB body size limit to prevent DoS attacks.
+
+🔍 Query Parsing: Automatic parsing of URL query strings (?search=foo).
+
+💾 Installation
+
 npm install @noturbob/redact
-````
 
------
 
-## 🏁 Quick Start
+🏁 Quick Start
 
-Getting a server up and running is simple. Create an `index.js` file and add the following code:
+const app = require('@noturbob/redact')();
 
-```javascript
-// 1. Import the framework
-const Redact = require('@noturbob/redact');
-
-// 2. Initialize the app
-const app = new Redact();
-const PORT = 3000;
-
-// 3. Define a route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Redact.js!' });
+app.routes({
+  path: "/",
+  GET: "Welcome to Redact!"
 });
 
-// 4. Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-```
+app.listen(3000);
 
-Then, run your server from the terminal:
 
-```bash
-node index.js
-```
+📖 API Guide
 
-You can now visit `http://localhost:3000` in your browser\!
+Routing
 
------
+Define routes using object blocks. The key is the method, the value is the handler.
 
-## 📖 API Guide
+app.routes(
+  {
+    path: "/users",
+    GET: () => [{ name: "Bobby" }],
+    POST: (body) => {
+      return { message: "Created", user: body };
+    }
+  }
+);
 
-### Routing
 
-> Define how your application responds to client requests for a specific endpoint.
+Dynamic Routes
 
-```javascript
-// GET request to fetch all users
-app.get('/users', (req, res) => {
-  res.json([{ id: 1, name: 'Bobby' }]);
-});
+You can use : to define dynamic parameters in the URL. Access them via req.params.
 
-// POST request to create a new user
-app.post('/users', (req, res) => {
-  const newUser = req.body; // Thanks to automatic body parsing!
-  console.log('Creating user:', newUser);
-  res.status(201).json({ message: 'User created!', user: newUser });
-});
-```
+// Matches /users/123
+{
+  path: "/users/:id",
+  GET: (body, req) => {
+    return { userId: req.params.id };
+  }
+}
 
-### Middleware
 
-> Middleware functions are functions that have access to the request (`req`) and response (`res`) objects, and the `next` function in the application’s request-response cycle. They are perfect for tasks that need to run for every request. **Remember to call `next()`** to pass control to the next handler.
+Middleware
 
-```javascript
-// Simple request logger
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  next();
-});
+Middleware runs before every request. Use it for logging or security.
 
-// Middleware to attach data to the request object
-app.use((req, res, next) => {
-  req.requestTime = Date.now();
-  next();
-});
-```
+Continue: Return undefined (or nothing).
 
-### Error Handling
+Stop/Error: Return an object or string. The request will stop immediately and send that value as the response.
 
-> Redact has a centralized error handler to prevent your server from crashing. Define an error-handling middleware by using four arguments `(err, req, res, next)`. This special middleware **must be defined after all other routes and `app.use()` calls.**
-
-```javascript
-// A route designed to throw an error
-app.get('/error', (req, res) => {
-  throw new Error('This is a simulated server error!');
+app.use((req) => {
+  console.log(`Request to ${req.url}`);
+  
+  if (!req.headers.authorization) {
+    return { error: "Unauthorized" }; // Sends 200 OK with this JSON
+  }
+  // Implicit "next()" if nothing returned
 });
 
-// The error-handling middleware that catches the error
-app.use((err, req, res, next) => {
-  console.error(err.stack); // Log the full error for the developer
-  res.status(500).json({ error: 'Internal Server Error' });
-});
-```
 
------
+🤝 Contributing
 
-## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 
-Contributions, issues, and feature requests are welcome\! Feel free to check the [issues page](https://github.com/noturbob/Redact/issues).
-
------
-
-## 📜 License
+📜 License
 
 This project is licensed under the MIT License.
-
-```
-```

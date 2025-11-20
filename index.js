@@ -1,110 +1,69 @@
 /**
- * @file An example server demonstrating how to use the Redact framework.
- * This file showcases routing, middleware, body parsing, and error handling.
+ * @file Example server using the Production-Ready Redact v2.1.
  * @author Bobby-Anthene
- * @version 1.1.0
  */
 
-// 1. Import the framework
-const Redact = require('./lib/redact.js');
-
-// 2. Initialize the application and define the port
-const app = new Redact();
+const app = require('./lib/redact.js')();
 const PORT = 3000;
 
-// --- Middleware ---
-
-/**
- * A simple logger middleware.
- * This runs for every incoming request to log its method and URL to the console.
- * It's useful for debugging and monitoring server traffic.
- */
-app.use((req, res, next) => {
-  console.log(`Request Received: ${req.method} ${req.url}`);
-  next(); // Pass control to the next middleware in the chain
-});
-
-/**
- * A middleware that attaches a custom property to the request object.
- * This demonstrates how middleware can enrich the request object with data
- * that can be used later in the route handlers.
- */
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  next();
-});
-
-
-// --- Routes ---
-
-/**
- * Route for the homepage (GET /).
- * Responds with a simple welcome message, including the timestamp
- * added by the middleware.
- */
-app.get('/', (req, res) => {
-  res.send(`Welcome! Your request was received at ${req.requestTime}`);
-});
-
-/**
- * Route to create a new user (POST /users).
- * Expects a JSON body with a 'name' property and demonstrates
- * using the built-in body parser.
- */
-app.post('/users', (req, res) => {
-  const { name } = req.body;
-
-  // Validate the incoming data.
-  if (!name) {
-    // Use the .status() and .json() helpers to send a clear error response.
-    return res.status(400).json({ error: `The 'name' property is required.` });
+// --- 1. Middleware Example ---
+// This runs before every request.
+// If we return nothing, the request continues.
+// If we return an object, the request STOPS and sends that object.
+app.use((req) => {
+  console.log(`[Log] ${req.method} request to ${req.url}`);
+  
+  // Security example: Block requests to /admin
+  if (req.url.includes('/admin')) {
+    return { error: "Unauthorized Access" }; // Stops request immediately
   }
-
-  // In a real application, you would save the user to a database here.
-  const newUser = { id: Date.now(), name };
-
-  console.log('User created:', newUser);
-
-  // Send a 201 (Created) status and the new user object back to the client.
-  res.status(201).json({
-    message: 'User created successfully',
-    user: newUser,
-  });
 });
 
-/**
- * A route designed to test the error handling system (GET /error).
- * Accessing this route will intentionally throw an error, which should be
- * caught by the error-handling middleware defined below.
- */
-app.get('/error', (req, res) => {
-  throw new Error('This is a simulated server error!');
-});
+// --- 2. Routes ---
+app.routes(
 
+  // Standard Static Route
+  {
+    path: "/",
+    GET: "Welcome to Redact v2.1!"
+  },
 
-// --- Error Handling Middleware ---
+  // Dynamic Route (New Feature!)
+  // Matches /users/123, /users/bobby, etc.
+  // We access params via `req.params` (2nd argument)
+  {
+    path: "/users/:id",
+    GET: (input, req) => {
+      return {
+        message: "User Found",
+        userId: req.params.id, // Extracted from URL
+        details: "This is a dynamic route response"
+      };
+    }
+  },
 
-/**
- * A "catch-all" error handler.
- * This special middleware will only run when an error is thrown or passed to `next(err)`.
- * It is identified by its unique four-argument signature: (err, req, res, next).
- *
- * NOTE: It is crucial to define this AFTER all other routes and middleware.
- */
-app.use((err, req, res, next) => {
-  // Log the full error stack to the console for the developer.
-  console.error('An error occurred:', err.stack);
+  // Query Params Example (New Feature!)
+  // Try visiting /search?q=javascript
+  {
+    path: "/search",
+    GET: (input, req) => {
+      return {
+        results: `Searching for: ${req.query.q}`,
+        filters: req.query
+      };
+    }
+  },
 
-  // Send a generic, user-friendly 500 response to the client.
-  // Avoid sending sensitive stack trace information in a production environment.
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: err.message, // Optionally include the error message
-  });
-});
+  // POST with Body Limit (New Feature!)
+  // If you send >1MB of data, the server will automatically cut connection.
+  {
+    path: "/create",
+    POST: (body) => {
+      return { status: "Created", data: body };
+    }
+  }
+);
 
-
-// 3. Start the server
 app.listen(PORT, () => {
-  console.log(`Redact server running on http://localhost:${PORT}`);
+  console.log(`Redact v2.1 running on http://localhost:${PORT}`);
 });
