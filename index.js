@@ -1,5 +1,5 @@
 /**
- * @file Example server using the Production-Ready Redact v2.1.
+ * @file Example server using the Production-Ready Redact v2.1.1 framework.
  * @author Bobby-Anthene
  */
 
