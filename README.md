@@ -1,221 +1,338 @@
 <div align="center">
 
-🛡️ Redact.js
+# 🛡️ Redact.js
 
-The Declarative, "Just Return" Framework for Node.js.
+### The Declarative, "Just Return" Framework for Modern Node.js
 
-Features • Quick Start • Documentation • Philosophy
+[![npm version](https://img.shields.io/npm/v/@noturbob/redact?style=flat-square&color=blue)](https://www.npmjs.com/package/@noturbob/redact)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen?style=flat-square&logo=node.js)](https://nodejs.org/)
+
+[Why Redact?](#-why-redact-vs-express) • [Features](#-key-features) • [Installation](#-installation) • [Documentation](#-documentation) • [Contributing](#-contributing)
+
+---
 
 </div>
 
-📖 Overview
+## 📖 Introduction
 
-Redact.js is a modern micro-framework designed to eliminate boilerplate. It abandons the traditional, imperative style of Express (res.send, res.json, next()) in favor of a clean, declarative syntax.
+**Redact.js** is a next-generation micro-framework for Node.js built on a simple premise: **Web servers should be simple function calls, not complex state managers.**
 
-With Redact, your API is defined as a structured object, and your logic is simple: You receive data, and you return data. The framework handles the rest.
+It abandons the traditional, imperative style of Express (`req, res, next`) in favor of a **clean, declarative syntax**. With Redact, you define your API as a structured object, and your logic is pure: **You receive input, and you return output.** The framework handles the HTTP complexity for you.
 
-✨ Features
+---
 
-Feature
+## 🆚 Why Redact? (vs Express)
 
-Description
+Most Node.js frameworks are **Imperative**: you have to tell the server *how* to send a response step-by-step. Redact is **Declarative**: you tell the server *what* the response is.
 
-⚡ Declarative Routing
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>🐢 Express.js (The Old Way)</th>
+<th>🚀 Redact.js (The New Way)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Routing</strong></td>
+<td>Scattered <code>app.get</code>, <code>app.post</code> calls. Hard to visualize structure.</td>
+<td><strong>Single Object Tree.</strong> See your entire API hierarchy at a glance.</td>
+</tr>
+<tr>
+<td><strong>Response</strong></td>
+<td>Manual <code>res.status(200).json({...})</code>.</td>
+<td>Just <code>return {...}</code>. The framework automates status & headers.</td>
+</tr>
+<tr>
+<td><strong>Async Logic</strong></td>
+<td>Easy to forget <code>.catch(next)</code>. Crashes server on unhandled errors.</td>
+<td><strong>Native Async/Await.</strong> Thrown errors are automatically caught and handled safely.</td>
+</tr>
+<tr>
+<td><strong>Real-Time</strong></td>
+<td>Requires external libraries (socket.io) and complex setup.</td>
+<td><strong>Built-in WebSockets.</strong> Handles HTTP and WS on the same port effortlessly.</td>
+</tr>
+<tr>
+<td><strong>Boilerplate</strong></td>
+<td>High. Middleware for everything (body-parser, cors, etc).</td>
+<td><strong>Zero.</strong> Automatic JSON parsing, query parsing, and security limits included.</td>
+</tr>
+</tbody>
+</table>
 
-Define your entire API structure in a single, readable object tree.
+---
 
-↩️ "Just Return" Logic
+## ✨ Key Features
 
-Forget res.json(). Just return an object, array, or string.
+<table>
+<tr>
+<td width="50%">
 
-🔀 Dynamic Routing
+### ⚡ Declarative Routing
+Define your API structure in a readable, nested object syntax.
 
-Native support for parameters like /users/:id.
+### ↩️ "Just Return" Logic
+Return an Object/Array for JSON, or a String for text. No `res` object needed.
 
-🛡️ Built-in Security
+### 🔌 Built-in WebSockets
+Real-time support out of the box with `app.socket()`.
 
-Automatic 1MB body size limit to prevent DoS attacks.
+</td>
+<td width="50%">
 
-🔌 Smart Middleware
+### 🔀 Dynamic Routing
+Native support for parameters like `/users/:id`.
 
-Filter requests or inject data before they reach your logic.
+### 🛡️ Automatic Security
+Built-in protection against DoS attacks (1MB body limit).
 
-🔎 Query Parsing
+### ⚙️ Smart Middleware
+Filter requests globally before they hit your logic.
 
-Automatic parsing of URL query strings (?search=foo).
+</td>
+</tr>
+</table>
 
-💾 Installation
+<div align="center">
 
-npm install @noturbob/redact
+### 📦 Zero Config • 🚄 Lightning Fast • 🎯 Type-Friendly
 
+</div>
 
-🚀 Quick Start
+---
 
-Initialize the app and define your first route in under 10 lines of code.
+## 💾 Installation
 
+```bash
+npm install @noturbob/redact ws
+```
+
+> **Note:** `ws` is required for WebSocket features
+
+---
+
+## 🚀 Quick Start
+
+```javascript
 const app = require('@noturbob/redact')();
 
+// Define your API
 app.routes({
   path: "/",
-  GET: "Welcome to the Redact API!"
+  GET: "Welcome to Redact!", // Returns text
+  POST: (body) => {
+    // Returns JSON automatically
+    return { status: "created", data: body };
+  }
 });
 
 app.listen(3000, () => {
-  console.log("Server running on port 3000");
+  console.log("🚀 Server running at http://localhost:3000");
 });
+```
 
+---
 
-🧠 Philosophy
+## 📚 Documentation
 
-1. Declarative vs. Imperative
+### 1️⃣ Declarative Routing
 
-Most frameworks force you to call functions to register routes one by one. Redact lets you describe your API structure.
+Instead of writing imperative code, **describe your API**.
 
-The Old Way:
-
-app.get('/users', (req, res) => res.send('users'));
-app.post('/users', (req, res) => res.send('created'));
-
-
-The Redact Way:
-
+```javascript
 app.routes({
-  path: "/users",
-  GET: "users",
-  POST: "created"
+  path: "/api/v1/status",
+  GET: { status: "online", uptime: process.uptime() }
 });
+```
 
+### 2️⃣ Handling Input (`input` vs `req`)
 
-2. The Return Pattern
+Your route handlers receive two arguments:
 
-Redact functions are pure. You don't manage the HTTP response manually.
+- **`input`**: The parsed data (JSON body for POST/PUT, or empty object).
+- **`req`**: The full request context (headers, params, query).
 
-Return an Object/Array? → Redact sends 200 OK with Content-Type: application/json.
-
-Return a String? → Redact sends 200 OK with Content-Type: text/plain.
-
-Throw an Error? → Redact catches it and sends 500 Internal Server Error.
-
-📚 Documentation
-
-1. Routing
-
-Routes are defined by passing objects to app.routes(). Each object represents a path and the methods it supports.
-
-Static Routes
-
-app.routes({
-  path: "/status",
-  GET: { status: "healthy", uptime: process.uptime() }
-});
-
-
-Dynamic Routes
-
-Use : to denote a parameter. Access it via req.params.
-
-app.routes({
-  path: "/users/:id",
-  GET: (body, req) => {
-    return { 
-      message: "User Found", 
-      userId: req.params.id 
-    };
-  }
-});
-
-
-2. Handling Input (body vs req)
-
-Route handlers receive two arguments:
-
-Argument
-
-Type
-
-Description
-
-1. input
-
-Object
-
-The parsed JSON body (for POST/PUT) or an empty object.
-
-2. req
-
-Object
-
-The full request context, including params, query, and headers.
-
-Example: Creating a Resource
-
+```javascript
 app.routes({
   path: "/products",
-  POST: (body) => {
-    // 'body' is the JSON data sent by the user
-    if (!body.price) return { error: "Price required" };
+  POST: (body, req) => {
+    // 'body' is the JSON payload sent by the user
+    console.log("User Agent:", req.headers['user-agent']);
     
-    return { success: true, item: body };
+    return { success: true, product: body };
   }
 });
+```
 
+### 3️⃣ Dynamic Routes
 
-3. Middleware
+Use `:` to define dynamic parameters. Access them via `req.params`.
 
-Middleware runs before every request. It follows the same "Just Return" logic.
-
-Return undefined (or nothing): The request continues to the next step.
-
-Return a value: The request stops immediately, and that value is sent to the client.
-
-// Example: Authentication Middleware
-app.use((req) => {
-  console.log(`Incoming ${req.method} to ${req.url}`);
-
-  // Block access to admin routes
-  if (req.url.includes("/admin")) {
-    return { error: "Unauthorized: Admin access only." };
+```javascript
+app.routes({
+  path: "/users/:id",
+  GET: (input, req) => {
+    // GET /users/500 -> { userId: "500" }
+    return { userId: req.params.id };
   }
+});
+```
+
+### 4️⃣ Real-Time WebSockets
+
+Redact creates a **unified server** for both HTTP and WebSockets.
+
+```javascript
+app.socket({
+  path: '/chat',
   
-  // If we return nothing here, the request proceeds to the route handler.
+  open: (ws) => {
+    console.log("✅ Client connected");
+    ws.send("Welcome!");
+  },
+
+  message: (ws, data, clients) => {
+    // 'data' is auto-parsed JSON
+    // 'clients' is a Set of all connected users (for broadcasting)
+    clients.forEach(client => client.send(JSON.stringify(data)));
+  },
+
+  close: () => {
+    console.log("❌ Client disconnected");
+  }
 });
+```
 
+### 5️⃣ Middleware
 
-4. Query Parameters
+Middleware runs **before every request**. It follows the "Just Return" philosophy:
 
-Query strings are automatically parsed into req.query.
+- **Return `undefined`**: Request proceeds to the route handler.
+- **Return a value**: Request stops, and that value is sent as the response.
 
-URL: GET /search?q=javascript&sort=desc
+```javascript
+app.use((req) => {
+  // Log every request
+  console.log(`[${req.method}] ${req.url}`);
 
+  // Security Check
+  if (req.url.includes("/admin")) {
+    // Stop the request immediately with a 403-like error
+    return { error: "Unauthorized Access" };
+  }
+});
+```
+
+### 6️⃣ Query Parameters
+
+Query strings are **automatically parsed** into `req.query`.
+
+**Request:** `GET /search?q=javascript&sort=desc`
+
+```javascript
 app.routes({
   path: "/search",
-  GET: (body, req) => {
+  GET: (input, req) => {
     return {
-      searchTerm: req.query.q,      // "javascript"
-      sortOrder: req.query.sort     // "desc"
+      results: [],
+      meta: {
+        query: req.query.q,    // "javascript"
+        sort: req.query.sort   // "desc"
+      }
     };
   }
 });
+```
 
+---
 
-🤝 Contributing
+## 🎯 Example: Complete REST API
+
+```javascript
+const app = require('@noturbob/redact')();
+
+let users = [
+  { id: 1, name: "Alice" },
+  { id: 2, name: "Bob" }
+];
+
+app.routes({
+  path: "/api/users",
+  
+  // Get all users
+  GET: () => users,
+  
+  // Create new user
+  POST: (body) => {
+    const newUser = { id: users.length + 1, ...body };
+    users.push(newUser);
+    return newUser;
+  }
+});
+
+app.routes({
+  path: "/api/users/:id",
+  
+  // Get specific user
+  GET: (input, req) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    return user || { error: "User not found" };
+  },
+  
+  // Update user
+  PUT: (body, req) => {
+    const index = users.findIndex(u => u.id === parseInt(req.params.id));
+    if (index === -1) return { error: "User not found" };
+    users[index] = { ...users[index], ...body };
+    return users[index];
+  },
+  
+  // Delete user
+  DELETE: (input, req) => {
+    const index = users.findIndex(u => u.id === parseInt(req.params.id));
+    if (index === -1) return { error: "User not found" };
+    users.splice(index, 1);
+    return { success: true };
+  }
+});
+
+app.listen(3000);
+```
+
+---
+
+## 🤝 Contributing
 
 We welcome contributions! Please fork the repository and submit a Pull Request.
 
-Fork the Project
+1. 🍴 Fork the Project
+2. 🌿 Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. 💾 Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. 🚀 Push to the Branch (`git push origin feature/AmazingFeature`)
+5. 🎉 Open a Pull Request
 
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
+---
 
-Commit your Changes (git commit -m 'Add some AmazingFeature')
+## 📄 License
 
-Push to the Branch (git push origin feature/AmazingFeature)
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
-Open a Pull Request
+---
 
-📄 License
+## 🌟 Show Your Support
 
-Distributed under the MIT License. See LICENSE for more information.
+If you find Redact.js helpful, please consider giving it a ⭐ on GitHub!
+
+---
 
 <div align="center">
-<sub>Built with ❤️ by NotUrBob</sub>
+
+### Built with ❤️ by [NotUrBob](https://github.com/noturbob)
+
+**[⬆ back to top](#️-redactjs)**
+
 </div>
