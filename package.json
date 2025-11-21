@@ -1,6 +1,6 @@
 {
   "name": "@noturbob/redact",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "A simple, user-friendly web API framework built in Node.js.",
   "main": "lib/redact.js",
   "scripts": {
@@ -12,10 +12,15 @@
     "framework",
     "http",
     "redact",
-    "nodejs"
+    "nodejs",
+    "websocket",
+    "realtime"
   ],
   "author": "Bobby Anthene",
   "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/noturbob/Redact"

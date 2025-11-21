@@ -1,69 +1,98 @@
 /**
- * @file Example server using the Production-Ready Redact v2.1.1 framework.
- * @author Bobby-Anthene
+ * @file Redact v2.2.0 Dev Server
+ * Use this file to test your framework changes locally.
  */
 
+// Import from local library
 const app = require('./lib/redact.js')();
 const PORT = 3000;
 
-// --- 1. Middleware Example ---
-// This runs before every request.
-// If we return nothing, the request continues.
-// If we return an object, the request STOPS and sends that object.
+// --- 1. Middleware (Runs before every request) ---
 app.use((req) => {
-  console.log(`[Log] ${req.method} request to ${req.url}`);
+  const time = new Date().toISOString().split('T')[1].split('.')[0];
+  console.log(`[${time}] ${req.method} ${req.url}`);
   
-  // Security example: Block requests to /admin
+  // Security Example: Block 'admin' paths
   if (req.url.includes('/admin')) {
     return { error: "Unauthorized Access" }; // Stops request immediately
   }
 });
 
-// --- 2. Routes ---
+// --- 2. HTTP Routes (REST API) ---
 app.routes(
 
-  // Standard Static Route
+  // Static Route
   {
     path: "/",
-    GET: "Welcome to Redact v2.1!"
+    GET: "Welcome to Redact v2.2! The Real-Time Framework."
   },
 
-  // Dynamic Route (New Feature!)
-  // Matches /users/123, /users/bobby, etc.
-  // We access params via `req.params` (2nd argument)
+  // Dynamic Route Example
   {
     path: "/users/:id",
     GET: (input, req) => {
       return {
-        message: "User Found",
-        userId: req.params.id, // Extracted from URL
-        details: "This is a dynamic route response"
+        status: "found",
+        userId: req.params.id,
+        details: "Fetched via Dynamic Routing"
       };
     }
   },
 
-  // Query Params Example (New Feature!)
-  // Try visiting /search?q=javascript
+  // Query Params Example (/search?q=test)
   {
     path: "/search",
     GET: (input, req) => {
       return {
-        results: `Searching for: ${req.query.q}`,
+        query: req.query.q || "empty",
         filters: req.query
       };
     }
   },
 
-  // POST with Body Limit (New Feature!)
-  // If you send >1MB of data, the server will automatically cut connection.
+  // POST Route (Auto Body Parsing)
   {
     path: "/create",
     POST: (body) => {
-      return { status: "Created", data: body };
+      return { status: "Created", received: body };
     }
   }
 );
 
+// --- 3. WebSocket Routes (Real-Time Chat) ---
+// Note: Ensure you have run 'npm install ws' in this folder
+app.socket({
+  path: '/chat',
+  
+  // On Connection
+  open: (ws) => {
+    console.log("⚡ Socket Connected");
+    ws.send(JSON.stringify({ user: 'System', text: 'Welcome to Redact Sockets!' }));
+  },
+
+  // On Message
+  message: (ws, data, clients) => {
+    console.log("📩 Received:", data);
+
+    // Broadcast to everyone else
+    clients.forEach(client => {
+      if (client !== ws && client.readyState === 1) {
+        client.send(JSON.stringify({
+          user: data.user,
+          text: data.text,
+          id: Date.now()
+        }));
+      }
+    });
+  },
+
+  // On Disconnect
+  close: () => {
+    console.log("❌ Socket Disconnected");
+  }
+});
+
+// --- 4. Start Server ---
 app.listen(PORT, () => {
-  console.log(`Redact v2.1 running on http://localhost:${PORT}`);
+  console.log(`🚀 Redact Dev Server running on http://localhost:${PORT}`);
 });
