@@ -1,6 +1,6 @@
 {
   "name": "@noturbob/redact",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A simple, user-friendly web API framework built in Node.js.",
   "main": "lib/redact.js",
   "scripts": {

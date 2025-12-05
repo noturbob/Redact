@@ -331,7 +331,7 @@ If you find Redact.js helpful, please consider giving it a ⭐ on GitHub!
 
 <div align="center">
 
-### Built with ❤️ by [NotUrBob](https://github.com/noturbob)
+### Built with ❤️ by [noturbob](https://github.com/noturbob)
 
 **[⬆ back to top](#️-redactjs)**
 
